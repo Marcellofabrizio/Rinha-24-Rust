@@ -1,27 +1,28 @@
 version: '3.5'
 services:
-  api01: &api
-    hostname: api01
-    environment:
-      - DB_HOSTNAME=db
+  # api01: &api
+  #   image: marcellofabrizio/rinha-24-rust:latest
+  #   hostname: api01
+  #   environment:
+  #     - DB_HOSTNAME=db
     
-    ports:
-      - "8081:8080"
-    depends_on:
-      - db
-    deploy:
-      resources:
-        limits:
-          cpus: "0.6"
-          memory: "200MB"
+  #   ports:
+  #     - "8081:8080"
+  #   depends_on:
+  #     - db
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.6"
+  #         memory: "200MB"
 
-  api02:
-    <<: *api 
-    hostname: api02
-    environment:
-      - DB_HOSTNAME=db
-    ports:
-      - "8082:8080"
+  # api02:
+  #   <<: *api 
+  #   hostname: api02
+  #   environment:
+  #     - DB_HOSTNAME=db
+  #   ports:
+  #     - "8082:8080"
 
   db:
     image: postgres
@@ -31,8 +32,10 @@ services:
       POSTGRES_PASSWORD: pass
       POSTGRES_USER: user
       POSTGRES_DB: rinha24
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
+    # ports:
+    #   - "5432:5432"
     volumes:
       - ./data:/docker-entrypoint-initdb.d
     deploy:
@@ -50,8 +53,7 @@ services:
     network_mode: host
     depends_on: 
       - db
-
-networks:
-  default:
-    driver: bridge
-    name: rinha-nginx-2024q1
+# networks:
+#   default:
+#     driver: bridge
+#     name: rinha-nginx-2024q1
