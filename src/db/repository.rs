@@ -2,7 +2,7 @@ use crate::db::transaction;
 use axum::{http::StatusCode, Json};
 use sqlx::{
     postgres::{PgListener, PgPoolOptions},
-    PgPool,
+    PgPool, Row,
 };
 use std::{error::Error, sync::Arc};
 
@@ -60,21 +60,28 @@ impl PgRepository {
     ) -> Result<StatusCode, sqlx::Error> {
         let mut db_transaction = self.pool.begin().await?;
 
-        let client = sqlx::query("SELECT 1 FROM clientes WHERE id = $1")
-            .bind(id_cliente)
+        let client = sqlx::query!("SELECT * FROM clientes WHERE id = $1", id_cliente)
             .fetch_one(&mut *db_transaction)
-            .await;
+            .await
+            .map(|row| row.id);
+
+        println!("{:?}", client);
 
         match client {
             Ok(_) => {
-                let new_saldo =
-                    sqlx::query("SELECT novo_saldo FROM add_transaction($1, $2, $3, $4)")
-                        .bind(id_cliente)
-                        .bind(new_transaction.valor)
-                        .bind(new_transaction.descricao)
-                        .bind(new_transaction.tipo.to_string())
-                        .fetch_one(&mut *db_transaction);
+                println!("Adding new saldo");
 
+                let new_saldo = sqlx::query!(
+                    "SELECT novo_saldo FROM add_transaction($1, $2, $3, $4)",
+                    id_cliente,
+                    new_transaction.valor,
+                    new_transaction.descricao,
+                    new_transaction.tipo.to_string()
+                )
+                .fetch_one(&mut *db_transaction)
+                .await;
+
+                println!("Novo Saldo: {:?}", new_saldo);
                 return Ok(StatusCode::ACCEPTED);
             }
             Err(err) => {
