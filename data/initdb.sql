@@ -48,12 +48,14 @@ BEGIN
 END;
 $$;
 
-CREATE FUNCTION add_transaction(cliente_id INTEGER, valor INTEGER, limite INTEGER, descricao TEXT, tipo CHAR(1), OUT novo_saldo INTEGER) LANGUAGE plpgsql AS $$
+CREATE FUNCTION add_transaction(cliente_id INTEGER, valor INTEGER, descricao TEXT, tipo CHAR(1), OUT novo_saldo INTEGER) 
+returns integer LANGUAGE plpgsql AS $$
 BEGIN
-
-    PERFORM pg_advisory_xact_lock(cliente_id);
-    
+   
     IF tipo = 'd' THEN
+        PERFORM limite FROM clientes WHERE id = cliente_id;
+
+        PERFORM pg_advisory_xact_lock(cliente_id);
         UPDATE clientes SET saldo = saldo - valor
         WHERE id = cliente_id AND saldo - valor >= - limite
         RETURNING saldo INTO novo_saldo;
@@ -62,7 +64,7 @@ BEGIN
             RETURN;
         END IF;
 
-        INSERT INTO transacoes (cliente_id, valor, limite, descricao)
+        INSERT INTO transacoes (cliente_id, valor, tipo, descricao)
         VALUES (cliente_id, valor, 'd', descricao);
     ELSIF tipo = 'c' THEN
         INSERT INTO transacoes (cliente_id, valor, tipo, descricao)
@@ -73,6 +75,8 @@ BEGIN
         WHERE id = cliente_id
         RETURNING saldo INTO novo_saldo;
     END IF;
+   
+   return;
 END;
 $$;
 
