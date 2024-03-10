@@ -40,7 +40,6 @@ impl<'de> Deserialize<'de> for TransactionType {
     where
         D: Deserializer<'de>,
     {
-        println!("OI");
         let s = String::deserialize(deserializer)?;
         match s.as_str() {
             "c" => Ok(TransactionType::Credit),

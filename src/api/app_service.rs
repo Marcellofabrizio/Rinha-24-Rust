@@ -28,7 +28,6 @@ pub async fn get_extrato(
     State(transaction): State<AppState>,
     Json(newTransaction): Json<NewTransaction>,
 ) -> impl IntoResponse {
-    println!("{:?}", newTransaction);
     match transaction
         .create_transaction(newTransaction.id_cliente, newTransaction)
         .await

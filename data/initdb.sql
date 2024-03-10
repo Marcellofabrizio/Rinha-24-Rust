@@ -57,7 +57,7 @@ BEGIN
 
         PERFORM pg_advisory_xact_lock(cliente_id);
         UPDATE clientes SET saldo = saldo - valor
-        WHERE id = cliente_id AND saldo - valor >= - limite
+        WHERE id = cliente_id AND saldo >= - limite
         RETURNING saldo INTO novo_saldo;
 
         IF novo_saldo IS NULL THEN
